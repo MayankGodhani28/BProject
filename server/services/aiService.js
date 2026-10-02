@@ -1,4 +1,5 @@
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
+import { HumanMessage } from "@langchain/core/messages";
 import { z } from "zod";
 
 // 1. Define the Structured Output Schema using Zod
@@ -96,3 +97,46 @@ ${text}
   const result = await structuredModel.invoke(prompt);
   return result;
 }
+
+/**
+ * Analyzes an uploaded document (PDF or Image) using Gemini multimodal capabilities.
+ * @param {Buffer} fileBuffer - File data buffer from multer memoryStorage
+ * @param {string} mimeType - e.g. "application/pdf", "image/png", "image/jpeg"
+ */
+export async function analyzeFile(fileBuffer, mimeType) {
+  const structuredModel = getModel();
+  const currentDate = new Date().toISOString().split("T")[0];
+
+  const base64Data = fileBuffer.toString("base64");
+  const dataUrl = `data:${mimeType};base64,${base64Data}`;
+
+  const promptText = `
+Today's date is: ${currentDate}.
+
+Examine this attached document/image carefully:
+1. Extract and read all visible text and handwriting.
+2. Explain what the document means in simple, clear language.
+3. Determine if it contains an actionable date/event (e.g. test, exam, meeting, deadline) that should be added to a calendar.
+4. If it is important information to save without a specific event date, mark it as a NOTE.
+5. Otherwise, mark actionType as NONE.
+`;
+
+  const message = new HumanMessage({
+    content: [
+      {
+        type: "text",
+        text: promptText,
+      },
+      {
+        type: "image_url",
+        image_url: {
+          url: dataUrl,
+        },
+      },
+    ],
+  });
+
+  const result = await structuredModel.invoke([message]);
+  return result;
+}
+
