@@ -1,0 +1,27 @@
+# Dependencies
+node_modules/
+package-lock.json
+
+# Environment variables & secrets (NEVER commit your API keys!)
+.env
+.env.local
+.env.*.local
+
+# Temporary uploaded files
+uploads/
+temp/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS / Editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Client build output (when building for production)
+client/dist/
+client/build/
